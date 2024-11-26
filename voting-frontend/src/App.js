@@ -200,7 +200,7 @@ function App() {
   
       <div className="footer">
         <p>
-          Développé avec ❤️ par <a href="https://github.com/ton-profil">Ton Nom</a>
+          Développé avec ❤️ par <a href="https://github.com/AnatoleMartin/VoteDecentralise">Tom, Jules, Anatole et Maxence</a>
         </p>
       </div>
     </div>
