@@ -87,13 +87,14 @@ function App() {
       const tx = await contract.vote(index);
       await tx.wait();
       alert("Vote enregistré !");
-      setLoading(false);
     } catch (err) {
-      console.error(err);
-      alert("Erreur lors du vote. Vous avez déjà voté.");
+      console.error("Erreur lors du vote :", err);
+      alert(`Erreur lors du vote : ${err.reason || "Une erreur s'est produite."}`);
+    } finally {
       setLoading(false);
     }
   };
+  
 
   const createElection = async () => {
     try {

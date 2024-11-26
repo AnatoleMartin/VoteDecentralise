@@ -10,39 +10,55 @@ contract Voting {
     struct Election {
         string title;
         Candidate[] candidates;
-        mapping(address => bool) voters;
         bool isActive;
     }
 
     Election public election;
+    uint public electionId; // Identifiant unique pour chaque élection
+    mapping(uint => mapping(address => bool)) public voters; // Associe electionId aux votants
 
     // Créer une nouvelle élection
     function createElection(
         string memory _title,
         string[] memory _candidateNames
     ) public {
+        // Supprime complètement l'ancienne élection
+        delete election;
+
+        // Augmente l'identifiant de l'élection
+        electionId++;
+
+        // Configure les nouvelles données de l'élection
         election.title = _title;
-        delete election.candidates; // Réinitialiser les candidats pour une nouvelle élection
+        election.isActive = true;
+
         for (uint i = 0; i < _candidateNames.length; i++) {
             election.candidates.push(
                 Candidate({name: _candidateNames[i], voteCount: 0})
             );
         }
-        election.isActive = true;
     }
 
     // Voter pour un candidat
     function vote(uint candidateIndex) public {
         require(election.isActive, "Election is not active");
-        require(!election.voters[msg.sender], "You have already voted");
+        require(
+            !voters[electionId][msg.sender],
+            "You have already voted in this election"
+        );
         require(
             candidateIndex < election.candidates.length,
             "Invalid candidate"
         );
 
+        // Logique de vote
         election.candidates[candidateIndex].voteCount += 1;
-        election.voters[msg.sender] = true;
+        voters[electionId][msg.sender] = true;
+
+        emit Voted(msg.sender, candidateIndex);
     }
+
+    event Voted(address voter, uint candidateIndex);
 
     // Clôturer l'élection
     function closeElection() public {
