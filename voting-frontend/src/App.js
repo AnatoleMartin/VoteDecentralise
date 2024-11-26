@@ -90,7 +90,7 @@ function App() {
       setLoading(false);
     } catch (err) {
       console.error(err);
-      alert("Erreur lors du vote.");
+      alert("Erreur lors du vote. Vous avez déjà voté.");
       setLoading(false);
     }
   };
