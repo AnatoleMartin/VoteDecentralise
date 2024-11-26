@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import { VOTING_ABI, VOTING_ADDRESS } from "./config";
+import './App.css';
+
 
 function App() {
   const [provider, setProvider] = useState(null);
@@ -165,17 +167,18 @@ function App() {
   };
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial" }}>
+    <div className="container">
       <h1>VoteDecentralise</h1>
-      <button onClick={connectWallet}>Connecter le portefeuille</button>
-      <button onClick={createElection}>Créer une élection</button>
-      <button onClick={closeElection} disabled={!electionTitle}>
-        Clôturer l'élection
-      </button>
-      <button onClick={loadElectionData}>
-        Recharger les données de l'élection
-      </button>
-
+  
+      <div className="header-buttons">
+        <button onClick={connectWallet}>Connecter le portefeuille</button>
+        <button onClick={createElection}>Créer une élection</button>
+        <button onClick={closeElection} disabled={!electionTitle}>
+          Clôturer l'élection
+        </button>
+        <button onClick={loadElectionData}>Recharger les données de l'élection</button>
+      </div>
+  
       <h2>Élection : {electionTitle || "Aucune élection en cours"}</h2>
       {candidates.length > 0 ? (
         <ul>
@@ -185,7 +188,6 @@ function App() {
               <button
                 onClick={() => vote(index)}
                 disabled={loading}
-                style={{ marginLeft: "10px" }}
               >
                 Voter
               </button>
@@ -193,10 +195,17 @@ function App() {
           ))}
         </ul>
       ) : (
-        <p>Chargement des candidats...</p>
+        <p className="loader">Chargement des candidats...</p>
       )}
+  
+      <div className="footer">
+        <p>
+          Développé avec ❤️ par <a href="https://github.com/ton-profil">Ton Nom</a>
+        </p>
+      </div>
     </div>
   );
+  
 }
 
 export default App;

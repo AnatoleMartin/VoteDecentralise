@@ -1,38 +1,125 @@
-.App {
+/* Global styles */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f9;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2 {
   text-align: center;
+  color: #4a90e2;
+  margin-bottom: 20px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+/* Button styles */
+button {
+  background-color: #4a90e2;
   color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
 }
 
-.App-link {
-  color: #61dafb;
+button:hover {
+  background-color: #357abd;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+button:disabled {
+  background-color: #b0c7e6;
+  cursor: not-allowed;
+}
+
+/* List of candidates */
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+li:last-child {
+  margin-bottom: 0;
+}
+
+/* Button alignment in list items */
+li button {
+  margin-left: 10px;
+}
+
+/* Header button group */
+.header-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.header-buttons button {
+  padding: 10px 20px;
+}
+
+/* Loader style */
+.loader {
+  display: block;
+  margin: 20px auto;
+  text-align: center;
+  font-size: 16px;
+  color: #777;
+}
+
+/* Alerts and error messages */
+.alert {
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+}
+
+.alert.success {
+  background-color: #dff0d8;
+  color: #3c763d;
+}
+
+.alert.error {
+  background-color: #f2dede;
+  color: #a94442;
+}
+
+/* Footer style */
+.footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #666;
+}
+
+.footer a {
+  color: #4a90e2;
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
 }
