@@ -87,28 +87,47 @@ function App() {
       const tx = await contract.vote(index);
       await tx.wait();
       alert("Vote enregistré !");
-      setLoading(false);
     } catch (err) {
-      console.error(err);
-      alert("Erreur lors du vote.");
+      console.error("Erreur lors du vote :", err);
+      alert(
+        `Erreur lors du vote : ${err.reason || "Une erreur s'est produite."}`
+      );
+    } finally {
       setLoading(false);
     }
   };
 
   const createElection = async () => {
     try {
+      // Demander le titre de l'élection
       const title = prompt("Titre de l'élection :");
-      const candidateNames = prompt(
-        "Candidats (séparés par des virgules) :"
-      ).split(",");
-      const tx = await contract.createElection(title, candidateNames);
+      if (title === null || title.trim() === "") {
+        alert("Création de l'élection annulée.");
+        return;
+      }
+
+      // Demander les noms des candidats
+      const candidatesInput = prompt(
+        "Noms des candidats (séparés par des virgules) :"
+      );
+      if (candidatesInput === null || candidatesInput.trim() === "") {
+        alert("Création de l'élection annulée.");
+        return;
+      }
+
+      const candidates = candidatesInput.split(",").map((name) => name.trim());
+      if (candidates.length === 0) {
+        alert("Vous devez entrer au moins un candidat.");
+        return;
+      }
+
+      // Envoyer la transaction au contrat
+      const tx = await contract.createElection(title, candidates);
       await tx.wait();
-      alert("Élection créée !");
-      setElectionTitle(title); // Met à jour le titre dans l'état
-      setCandidates(candidateNames.map((name) => ({ name, votes: 0 }))); // Réinitialise les candidats
+      alert("Élection créée avec succès !");
     } catch (err) {
-      console.error("Erreur lors de la création de l'élection :", err);
-      alert("Impossible de créer l'élection.");
+      console.error(err);
+      alert("Erreur lors de la création de l'élection.");
     }
   };
 

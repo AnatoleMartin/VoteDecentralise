@@ -1,4 +1,4 @@
-export const VOTING_ADDRESS = "0xA1B2613dC3ce1997a18E563a69Cb26144BA33830"; //adresse du contrat
+export const VOTING_ADDRESS = "0xDD29DF5c7183c31273f8ebfa300ebc0951109BDe"; //adresse du contrat
 export const VOTING_ABI = [
   // Copie l'ABI de build/contracts/Voting.json
   {
