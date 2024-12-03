@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import { VOTING_ABI, VOTING_ADDRESS } from "./config";
+import Swal from "sweetalert2";
 import './App.css';
-
 
 function App() {
   const [provider, setProvider] = useState(null);
@@ -14,51 +14,44 @@ function App() {
 
   const connectWallet = async () => {
     if (!window.ethereum) {
-      alert("MetaMask n'est pas installé !");
+      Swal.fire("Erreur", "MetaMask n'est pas installé !", "error");
       return;
     }
     try {
-      // Demande la connexion au portefeuille
       await window.ethereum.request({ method: "eth_requestAccounts" });
-      alert("Portefeuille connecté !");
+      Swal.fire("Succès", "Portefeuille connecté !", "success");
     } catch (err) {
       console.error("Erreur de connexion au portefeuille :", err);
+      Swal.fire("Erreur", "Connexion échouée !", "error");
     }
   };
 
   useEffect(() => {
     const loadBlockchainData = async () => {
       if (!window.ethereum) {
-        alert(
-          "Veuillez installer MetaMask pour interagir avec cette application !"
+        Swal.fire(
+          "Erreur",
+          "Veuillez installer MetaMask pour interagir avec cette application !",
+          "error"
         );
         return;
       }
 
       try {
-        // Demande la connexion si elle n'a pas encore été faite
-        const accounts = await window.ethereum.request({
-          method: "eth_accounts",
-        });
+        const accounts = await window.ethereum.request({ method: "eth_accounts" });
         if (accounts.length === 0) {
-          alert("Veuillez connecter votre portefeuille !");
+          Swal.fire("Erreur", "Veuillez connecter votre portefeuille !", "error");
           return;
         }
 
-        // Configure ethers.js
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
-        const contract = new ethers.Contract(
-          VOTING_ADDRESS,
-          VOTING_ABI,
-          signer
-        );
+        const contract = new ethers.Contract(VOTING_ADDRESS, VOTING_ABI, signer);
 
         setProvider(provider);
         setSigner(signer);
         setContract(contract);
 
-        // Charger les informations de l'élection
         const election = await contract.election();
         setElectionTitle(election.title);
 
@@ -73,10 +66,8 @@ function App() {
         }
         setCandidates(candidatesList);
       } catch (err) {
-        console.error(
-          "Erreur lors du chargement des données blockchain :",
-          err
-        );
+        console.error("Erreur lors du chargement des données blockchain :", err);
+        Swal.fire("Erreur", "Impossible de charger les données blockchain.", "error");
       }
     };
 
@@ -88,12 +79,10 @@ function App() {
       setLoading(true);
       const tx = await contract.vote(index);
       await tx.wait();
-      alert("Vote enregistré !");
+      Swal.fire("Succès", "Vote enregistré avec succès !", "success");
     } catch (err) {
       console.error("Erreur lors du vote :", err);
-      alert(
-        `Erreur lors du vote : ${err.reason || "Une erreur s'est produite."}`
-      );
+      Swal.fire("Erreur", "Impossible d'enregistrer le vote.", "error");
     } finally {
       setLoading(false);
     }
@@ -101,46 +90,88 @@ function App() {
 
   const createElection = async () => {
     try {
-      // Demander le titre de l'élection
-      const title = prompt("Titre de l'élection :");
-      if (title === null || title.trim() === "") {
-        alert("Création de l'élection annulée.");
+      const { value: title } = await Swal.fire({
+        title: "Titre de l'élection",
+        input: "text",
+        inputPlaceholder: "Entrez le titre de l'élection",
+        showCancelButton: true,
+      });
+  
+      if (!title) {
+        Swal.fire("Info", "Création annulée.", "info");
         return;
       }
-
-      // Demander les noms des candidats
-      const candidatesInput = prompt(
-        "Noms des candidats (séparés par des virgules) :"
-      );
-      if (candidatesInput === null || candidatesInput.trim() === "") {
-        alert("Création de l'élection annulée.");
-        return;
+  
+      let candidates = [];
+      let addMore = true;
+  
+      while (addMore) {
+        const { value: candidateData } = await Swal.fire({
+          title: "Ajouter un candidat",
+          html: `
+            <div class="form-group">
+              <div class="form-group">
+              <label for="name">Nom du candidat</label>
+              <input id="name" type="text" class="swal2-input" placeholder="Nom du candidat">
+            </div>
+            <div class="form-group">
+              <label for="description">Description</label>
+              <textarea id="description" class="swal2-textarea" placeholder="Description"></textarea>
+            </div>
+          `,
+          focusConfirm: false,
+          showCancelButton: true,
+          preConfirm: () => {
+            const name = document.getElementById('name').value.trim();
+            const description = document.getElementById('description').value.trim();
+            const photo = document.getElementById('photo').value.trim();
+  
+            if (!name || !description || !photo) {
+              Swal.showValidationMessage('Veuillez remplir tous les champs.');
+              return false;
+            }
+  
+            return { name, description, photo };
+          }
+        });
+  
+        if (candidateData) {
+          candidates.push(candidateData);
+          addMore = (await Swal.fire({
+            title: "Ajouter un autre candidat ?",
+            text: "Voulez-vous ajouter un autre candidat ?",
+            showCancelButton: true,
+            confirmButtonText: "Oui",
+            cancelButtonText: "Non",
+          })).isConfirmed;
+        } else {
+          Swal.fire("Erreur", "Le candidat doit avoir un nom, une description et une photo.", "error");
+        }
       }
-
-      const candidates = candidatesInput.split(",").map((name) => name.trim());
+  
       if (candidates.length === 0) {
-        alert("Vous devez entrer au moins un candidat.");
+        Swal.fire("Erreur", "Vous devez entrer au moins un candidat.", "error");
         return;
       }
-
-      // Envoyer la transaction au contrat
+  
       const tx = await contract.createElection(title, candidates);
       await tx.wait();
-      alert("Élection créée avec succès !");
+      Swal.fire("Succès", "Élection créée avec succès !", "success");
     } catch (err) {
       console.error(err);
-      alert("Erreur lors de la création de l'élection.");
+      Swal.fire("Erreur", "Impossible de créer l'élection.", "error");
     }
   };
+  
 
   const closeElection = async () => {
     try {
       const tx = await contract.closeElection();
       await tx.wait();
-      alert("Élection clôturée !");
+      Swal.fire("Succès", "Élection clôturée avec succès !", "success");
     } catch (err) {
       console.error("Erreur lors de la clôture de l'élection :", err);
-      alert("Impossible de clôturer l'élection.");
+      Swal.fire("Erreur", "Impossible de clôturer l'élection.", "error");
     }
   };
 
@@ -159,51 +190,76 @@ function App() {
         });
       }
       setCandidates(candidatesList);
-      alert("Données de l'élection rechargées !");
+      Swal.fire("Succès", "Données de l'élection rechargées !", "success");
     } catch (err) {
       console.error("Erreur lors du rechargement des données :", err);
-      alert("Impossible de recharger les données.");
+      Swal.fire("Erreur", "Impossible de recharger les données.", "error");
     }
   };
 
   return (
-    <div className="container">
-      <h1>VoteDecentralise</h1>
-  
-      <div className="header-buttons">
-        <button onClick={connectWallet}>Connecter le portefeuille</button>
-        <button onClick={createElection}>Créer une élection</button>
-        <button onClick={closeElection} disabled={!electionTitle}>
-          Clôturer l'élection
-        </button>
-        <button onClick={loadElectionData}>Recharger les données de l'élection</button>
+    <div>
+      <header className="app-header">
+        <h1>Vote</h1><h1 className="titre">Decentralise</h1>
+        <nav className="header-link">
+          <ul>
+            <li><a href="" onClick={createElection}>Elections</a></li>
+            <li><a href=""  onClick={connectWallet}>Connexion</a></li>
+          </ul>
+        </nav>
+      </header>
+      <div className="description">
+        <p className="titre">Vote électronique</p>
+        <p>La solution pour des élections équitables, transparentes et accessibles à tous</p>
       </div>
-  
-      <h2>Élection : {electionTitle || "Aucune élection en cours"}</h2>
-      {candidates.length > 0 ? (
-        <ul>
-          {candidates.map((candidate, index) => (
-            <li key={index}>
-              {candidate.name} - {candidate.votes} votes
-              <button
-                onClick={() => vote(index)}
-                disabled={loading}
-              >
-                Voter
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="loader">Chargement des candidats...</p>
-      )}
-  
-      <div className="footer">
-        <p>
-          Développé avec ❤️ par <a href="https://github.com/AnatoleMartin/VoteDecentralise">Tom, Jules, Anatole et Maxence</a>
-        </p>
-      </div>
+      <main>
+        <h2 className="sous-titre">Nos fonctionnalités</h2>
+        <div className="container">
+          <div className="case">
+            <p>Connectez votre portefeuille pour accéder à vos fonctionnalités sécurisées.</p>
+            <button className="header-buttons" onClick={connectWallet}>Connecter le portefeuille</button>
+          </div>
+          <div className="case">
+            <p>Créez une nouvelle élection pour organiser facilement la collecte des votes.</p> 
+            <button className="header-buttons" onClick={createElection}>Créer une élection</button>
+          </div>
+          <div className="case">
+            <p>Finalisez l'élection pour compter les votes et annoncer les résultats.</p>
+            <button className="header-buttons" onClick={closeElection} disabled={!electionTitle}>Clôturer l'élection</button>
+          </div>
+          <div className="case">
+            <p>Revenez à l'état initial pour rafraîchir les informations de l'élection.</p>
+            <button className="header-buttons" onClick={loadElectionData}>Recharger les données</button>
+          </div>
+        </div>
+        <h2>Élection : {electionTitle || "Aucune élection en cours"}</h2>
+        {candidates.length > 0 ? (
+          <ul>
+            {candidates.map((candidate, index) => (
+              <li key={index}>
+                {candidate.name} - {candidate.votes} votes
+                <button onClick={() => vote(index)} disabled={loading}>
+                  Voter
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="loader"></p>
+        )}
+      </main>
+
+      <footer className="footer">
+        <div className="column1">
+          <h1>Vote</h1><h1 className="titre">Decentralise</h1>
+        </div>
+        <div className="column2">
+          <p>Développé par : </p>
+          <a href="https://github.com/AnatoleMartin/VoteDecentralise">Tom, Jules, Anatole et Maxence</a>
+        </div>
+      </footer>
     </div>
+
   );
   
 }
