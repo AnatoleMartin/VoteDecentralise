@@ -96,64 +96,30 @@ function App() {
         inputPlaceholder: "Entrez le titre de l'élection",
         showCancelButton: true,
       });
-  
+
       if (!title) {
         Swal.fire("Info", "Création annulée.", "info");
         return;
       }
-  
-      let candidates = [];
-      let addMore = true;
-  
-      while (addMore) {
-        const { value: candidateData } = await Swal.fire({
-          title: "Ajouter un candidat",
-          html: `
-            <div class="form-group">
-              <div class="form-group">
-              <label for="name">Nom du candidat</label>
-              <input id="name" type="text" class="swal2-input" placeholder="Nom du candidat">
-            </div>
-            <div class="form-group">
-              <label for="description">Description</label>
-              <textarea id="description" class="swal2-textarea" placeholder="Description"></textarea>
-            </div>
-          `,
-          focusConfirm: false,
-          showCancelButton: true,
-          preConfirm: () => {
-            const name = document.getElementById('name').value.trim();
-            const description = document.getElementById('description').value.trim();
-            const photo = document.getElementById('photo').value.trim();
-  
-            if (!name || !description || !photo) {
-              Swal.showValidationMessage('Veuillez remplir tous les champs.');
-              return false;
-            }
-  
-            return { name, description, photo };
-          }
-        });
-  
-        if (candidateData) {
-          candidates.push(candidateData);
-          addMore = (await Swal.fire({
-            title: "Ajouter un autre candidat ?",
-            text: "Voulez-vous ajouter un autre candidat ?",
-            showCancelButton: true,
-            confirmButtonText: "Oui",
-            cancelButtonText: "Non",
-          })).isConfirmed;
-        } else {
-          Swal.fire("Erreur", "Le candidat doit avoir un nom, une description et une photo.", "error");
-        }
+
+      const { value: candidatesInput } = await Swal.fire({
+        title: "Noms des candidats",
+        input: "textarea",
+        inputPlaceholder: "Entrez les noms des candidats séparés par des virgules",
+        showCancelButton: true,
+      });
+
+      if (!candidatesInput) {
+        Swal.fire("Info", "Création annulée.", "info");
+        return;
       }
-  
+
+      const candidates = candidatesInput.split(",").map((name) => name.trim());
       if (candidates.length === 0) {
         Swal.fire("Erreur", "Vous devez entrer au moins un candidat.", "error");
         return;
       }
-  
+
       const tx = await contract.createElection(title, candidates);
       await tx.wait();
       Swal.fire("Succès", "Élection créée avec succès !", "success");
