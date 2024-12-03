@@ -118,11 +118,6 @@ function App() {
               <label for="description">Description</label>
               <textarea id="description" class="swal2-textarea" placeholder="Description"></textarea>
             </div>
-            <div class="form-group">
-              <label for="photo">Photo</label>
-              <input id="photo" type="file" class="file-input" accept=".png,.jpeg,.jpg">
-              <label for="photo" class="custom-file-label">Choisir un fichier</label>
-            </div>
           `,
           focusConfirm: false,
           showCancelButton: true,
